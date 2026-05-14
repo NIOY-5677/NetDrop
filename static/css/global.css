@@ -346,11 +346,11 @@ main{
         padding: 14px 24px;
     }
     #menuToggle span {
-        left: 85vw;
+        left: 80vw;
     }
 
     #menuToggle input {
-        left: 85vw;
+        left: 80vw;
     }
 
 }

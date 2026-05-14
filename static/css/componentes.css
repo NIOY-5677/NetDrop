@@ -478,6 +478,7 @@
 .UpData {
     background-color: var(--color-secondary);
     border-radius: var(--border-radius-lg);
+    border: 1px solid var(--color-border-light);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     padding: 30px;
     width: 100%;

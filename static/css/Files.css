@@ -32,7 +32,6 @@
 
 .File-Contenedor{
     width: 95%;
-    min-height: 100vh;
     margin-top: 40px;
     display: flex;
     align-items: center;
@@ -42,7 +41,7 @@
 
 .File_items{
     width: 90%;
-    height: 120px;
+    height: 110px;
     margin: 15px;
     display: flex;
     align-items: center;
@@ -76,7 +75,7 @@
 
 
 .File_Contenido{
-    height: 85%;
+    height: 80%;
     aspect-ratio: 1 / 1;
     margin: 15px;
     overflow: hidden;
@@ -110,7 +109,7 @@
 
 .Acciones{
     width: 50%;
-    height: 80%;
+    height: 70%;
     display: flex;
     justify-content: flex-end;
     align-items: center;
@@ -123,16 +122,18 @@
     border: var(--color-gray-border-light) 1px solid;
     margin: 5px 0 5px 0px;
     border-radius: 5px;
-    width: 100px;
-    height: 100px;
+    width: 120px;
+    height: 70px;
     display: flex;
     justify-content: center;
     align-items: center;
+    text-decoration: none;
+    color: var(--file-text);
 }
 
 .Acciones a > img{
-    width: 40%;
-    height: 40%;
+    width: 30%;
+    height: 30%;
     object-fit: contain;
 }
 
@@ -144,54 +145,79 @@
 
 }
 
-@media (max-width: 480px) {
-    .File_items {
-        height: 60px; /* Una altura cómoda para el dedo */
-        margin: 10px 5px; /* Menos margen lateral en móvil */
-        padding: 5px;
-        /* Al no cambiar el flex-direction, se mantiene como FILA (lista) */
-    }
 
-    .File_Contenido {
-        width: 50px;
-        height: 50px;
-        margin: 0 15px 0 0; 
-        flex-shrink: 0; /
-    }
-
-    .File_Detalles {
-        /* Los detalles toman el espacio central sobrante */
-        width: 30%;
-        flex: 1; /* Esto hace que se expanda para llenar el centro */
-        margin: 0;
-        height: auto;
-        justify-content: center;
-    }
-
-
-    .File_Detalles .Tipo, .Fecha{
-    font-size: 8px;
+.No-File{
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 20px;
+    text-align: center;
+    margin-top: 50px;
 }
 
-    .File_Detalles .Titulo {
-        /* Bajamos el tamaño de fuente drásticamente para móvil */
-        font-size: 18px; 
-    }
+.No-File picture{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    scale: 1.5;
+}
+.No-File h2{
+    font-size: 28px;
+    color: var(--color-primary);
+    margin-top: 20px;
+    font-weight: 600;
+}
 
+.No-File p{
+    margin: 10px;
+}
+
+.No-File a{
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: var(--file-surface);
+    color: var(--file-text);
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 5px;
+    border: 1px solid var(--file-surface-muted);
+}
+
+.No-File a:hover{
+    background-color: var(--file-text);
+    border: 1px solid var(--color-gray-border-light);
+    transition: var(--file-transition);
+    color: var(--file-link-text);
+}
+
+@media screen and (max-width: 600px) {
     .Acciones {
-        width: 50%;
-        height: 50px;
-        justify-content: flex-end;
-        translate: 10px;
+        width: auto !important;
+        gap: 10px !important;
+        flex-shrink: 0 !important;
     }
 
     .Acciones a {
-        width: 50px;
-        height: 50px;
+        /* Volvemos los botones cuadraditos y pequeños */
+        width: 45px !important; 
+        height: 45px !important;
+        padding: 0 !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        
+        /* Ocultamos el texto de "Eliminar/Descargar" */
+        font-size: 0 !important; 
+        color: transparent !important;
     }
-    .Acciones a > img {
-        width: 50%;
-        height: 50%;
-        object-fit: contain;
+
+    .Acciones a img {
+        width: 22px !important;
+        height: 22px !important;
+        margin: 0 !important; /* Centrado total */
     }
 }

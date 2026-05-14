@@ -1,0 +1,27 @@
+/* estilos.qss */
+QWidget {
+    background-color: #ffffff; /* Fondo azul casi negro muy profundo */
+    font-family: 'Segoe UI', sans-serif;
+}
+
+QLabel {
+    color: #f8fafc;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+QPushButton {
+    background-color: #ffffff; /* Verde esmeralda */
+    color: #000000;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    border: 1px solid #a7a7a7;
+    box-shadow: #a7a7a7;
+    
+    /* DIMENSIONES MÍNIMAS */
+    min-width: 150px;
+    min-height: 45px;
+    weight: 150px;
+}

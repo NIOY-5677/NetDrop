@@ -46,9 +46,11 @@
     </div>
     <div class="Acciones">
       <a href="#" class="delete-link" title="Eliminar archivo" onclick="openDeleteModal('{{ file_item.nombre }}'); return false;">
+          Eliminar
         <img src="{{ url_for('static', filename='iconos/trash.svg') }}" alt="Eliminar">
       </a>
       <a href="/descarga/{{ file_item.nombre }}" class="download-link" title="Descargar archivo">
+        Descargar
         <img src="{{ url_for('static', filename='iconos/descarga.svg') }}" alt="Descargar">
       </a>
     </div>
@@ -57,10 +59,17 @@
 </section>
 
 {% if not File %}
-  <div class="empty-state" style="width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 60px 20px; text-align: center; margin-top: 50px;">
-    <h2 style="font-size: 28px; color: #000000; margin-bottom: 10px; font-weight: 600;">No hay archivos aun</h2>
-    <p style="font-size: 16px; color: #666666; margin: 0;">Sube tu primer archivo para comenzar</p>
-  </div>
+<section class="No-File">
+  <picture>
+    <img src="{{url_for('static', filename='iconos/file.svg')}}" alt="">
+  </picture>
+
+  <h2>No hay archivos</h2>
+
+  <p>En este mometo no hay ningun archivo para mostrar</p>
+
+  <a href="/update">Subir archivo</a>
+</section>
   {% endif %}
 </section>
 

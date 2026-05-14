@@ -7,12 +7,16 @@ from werkzeug.utils import secure_filename
 import secrets
 import urllib.request
 import sys
+import threading
 
 # Funciones propias
 from Funciones.ip import sacar_ip
 from Funciones.configuracion import ALLOWED_EXTENSIONS, MAX_FILE_SIZE
 from Funciones.abrirNavegador import abrir_navegador
 from Funciones.close import esta_cerrado
+
+#Lanzador
+from Lanzador.main import Iniciador
 
 app = Flask(__name__, template_folder=templates_dir(), static_folder=static_dir())
 app.config['SECRET_KEY'] = secrets.token_hex(32)
@@ -109,21 +113,37 @@ def qr():
     Qr_Generator.Generar_QR()
     return redirect('/qrgenerator')
 
+
+# ... Tus otras importaciones y funciones (esta_cerrado, Qr_Generator, etc.)
+
+def ejecutar_servidor():
+    """Función para correr Flask en un hilo secundario."""
+    # IMPORTANTE: use_reloader=False es vital para que la UI no se abra dos veces
+    app.run(debug=True, host="0.0.0.0", port=5000, use_reloader=False)
+
 if __name__ == '__main__':
     if esta_cerrado():
-        # Escenario 1: El servidor está apagado. Arrancamos.
+        # Escenario 1: El servidor está apagado. Arrancamos ambos.
         if not os.environ.get('WERKZEUG_RUN_MAIN'):
             print(f"🚀 Iniciando NetDrop en: http://{sacar_ip()}:5000")
             Qr_Generator.Generar_QR()
-            abrir_navegador()
+            # abrir_navegador() # Podés comentarlo si la UI ya muestra la app
         
-        app.run(debug=True, host="0.0.0.0", port=5000)
+        # 1. Creamos y lanzamos el hilo del servidor
+        servidor_thread = threading.Thread(target=ejecutar_servidor)
+        servidor_thread.daemon = True # Para que se apague al cerrar la ventana
+        servidor_thread.start()
+
+        # 2. Arrancamos la interfaz de PySide6 en el hilo principal
+        # Asegurate de que Iniciador() ejecute app.exec() al final
+        Iniciador() 
+
     else:
-        # Escenario 2: Ya está corriendo. Solo avisamos en consola y abrimos pestaña.
+        # Escenario 2: Ya está corriendo. Solo avisamos y abrimos pestaña.
         print("\n" + "="*40)
         print("⚠️  NETDROP YA ESTÁ EN EJECUCIÓN")
         print(f"🔗 Abriendo pestaña en: http://{sacar_ip()}:5000")
         print("="*40 + "\n")
         
-        abrir_navegador() # Te manda al navegador para que no pierdas el hilo
-        sys.exit() # Cerramos este proceso duplicado
+        abrir_navegador()
+        sys.exit()
