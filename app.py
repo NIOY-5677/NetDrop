@@ -8,12 +8,15 @@ import secrets
 import urllib.request
 import sys
 import threading
+import webview
+import time
 
 # Funciones propias
 from Funciones.ip import sacar_ip
 from Funciones.configuracion import ALLOWED_EXTENSIONS, MAX_FILE_SIZE
 from Funciones.abrirNavegador import abrir_navegador
 from Funciones.close import esta_cerrado
+
 
 #Lanzador
 from Lanzador.main import Iniciador
@@ -113,37 +116,44 @@ def qr():
     Qr_Generator.Generar_QR()
     return redirect('/qrgenerator')
 
-
-# ... Tus otras importaciones y funciones (esta_cerrado, Qr_Generator, etc.)
-
 def ejecutar_servidor():
-    """Función para correr Flask en un hilo secundario."""
-    # IMPORTANTE: use_reloader=False es vital para que la UI no se abra dos veces
+    """Función para correr Flask en el hilo secundario."""
     app.run(debug=True, host="0.0.0.0", port=5000, use_reloader=False)
+
+def arrancar_webview():
+    """Función para correr la interfaz ligera nativa en el hilo principal."""
+    time.sleep(0.8) 
+    webview.create_window(
+        title='NetDrop Desktop', 
+        url='http://127.0.0.1:5000',
+        width=850,
+        height=650,
+        min_size=(850, 650),
+        resizable=True
+    )
+    webview.start()
 
 if __name__ == '__main__':
     if esta_cerrado():
-        # Escenario 1: El servidor está apagado. Arrancamos ambos.
+        # Escenario 1: El servidor está apagado. Arrancamos de cero.
         if not os.environ.get('WERKZEUG_RUN_MAIN'):
             print(f"🚀 Iniciando NetDrop en: http://{sacar_ip()}:5000")
             Qr_Generator.Generar_QR()
-            # abrir_navegador() # Podés comentarlo si la UI ya muestra la app
         
-        # 1. Creamos y lanzamos el hilo del servidor
+        # 1. Lanzamos el servidor Flask en segundo plano
         servidor_thread = threading.Thread(target=ejecutar_servidor)
-        servidor_thread.daemon = True # Para que se apague al cerrar la ventana
+        servidor_thread.daemon = True 
         servidor_thread.start()
 
-        # 2. Arrancamos la interfaz de PySide6 en el hilo principal
-        # Asegurate de que Iniciador() ejecute app.exec() al final
-        Iniciador() 
+        # 2. Levantamos el WebView ligero en el hilo principal
+        arrancar_webview()
 
     else:
-        # Escenario 2: Ya está corriendo. Solo avisamos y abrimos pestaña.
+        # Escenario 2: Ya hay una instancia de NetDrop abierta.
         print("\n" + "="*40)
         print("⚠️  NETDROP YA ESTÁ EN EJECUCIÓN")
         print(f"🔗 Abriendo pestaña en: http://{sacar_ip()}:5000")
         print("="*40 + "\n")
         
-        abrir_navegador()
+        abrir_navegador() 
         sys.exit()
