@@ -1,0 +1,218 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Ajustes & Temas</h1>
+            <p class="page-subtitle">Personaliza la apariencia de NetDrop o importa tus propios temas en JSON.</p>
+        </div>
+    </div>
+
+    <!-- Sección 1: Seleccionar Tema Predeterminado (5 Temas) -->
+    <div class="settings-section">
+        <h2 class="settings-title">Temas Predeterminados</h2>
+        <div class="theme-grid" id="ThemeGrid">
+            <!-- Cargado dinámicamente desde themes.json -->
+        </div>
+    </div>
+
+    <!-- Sección 2: Crear / Importar Tema desde JSON -->
+    <div class="settings-section">
+        <h2 class="settings-title">Importar o Crear Tema (JSON)</h2>
+        <p class="settings-desc">Descarga la plantilla base, edita tus propios colores o carga un archivo `.json` desde tu equipo para aplicarlo al instante.</p>
+        
+        <div class="json-editor-card">
+            <textarea id="ThemeJsonInput" class="json-textarea" rows="10" spellcheck="false" placeholder='{
+  "id": "mi-tema-personalizado",
+  "name": "Mi Tema Personalizado",
+  "bgBase": "#18181b",
+  "surface": "#27272a",
+  "surfaceHover": "#3f3f46",
+  "text": "#f4f4f5",
+  "textHeading": "#ffffff",
+  "textMuted": "#a1a1aa",
+  "accent": "#10b981",
+  "accentHover": "#059669",
+  "accentBg": "rgba(16, 185, 129, 0.15)",
+  "border": "#3f3f46",
+  "borderHover": "#52525b",
+  "danger": "#ef4444"
+}'></textarea>
+
+            <input type="file" id="ThemeFileInput" accept=".json" style="display: none;" onchange="loadThemeFile(event)" />
+
+            <div class="json-actions">
+                <button type="button" class="btn-subtle" onclick="downloadThemeTemplate()">Descargar Plantilla JSON</button>
+                <button type="button" class="btn-subtle" onclick="document.getElementById('ThemeFileInput').click()">Cargar Archivo JSON</button>
+                <button type="button" class="btn-subtle" onclick="exportActiveThemeJson()">Exportar JSON Activo</button>
+                <button type="button" class="btn-subtle" onclick="resetToDefaultTheme()">Restablecer por defecto</button>
+                <button type="button" class="btn-primary" onclick="applyCustomJsonTheme()">Aplicar Tema JSON</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let defaultThemes = [];
+
+    async function loadThemes() {
+        try {
+            const res = await fetch('/static/json/themes.json');
+            defaultThemes = await res.json();
+            renderThemeGrid();
+        } catch (e) {
+            console.error('Error cargando temas:', e);
+        }
+    }
+
+    async function getActiveThemeData() {
+        try {
+            const data = localStorage.getItem('netdrop_active_theme_data');
+            if (data) {
+                return JSON.parse(data);
+            }
+        } catch (e) {}
+
+        try {
+            const res = await fetch('/api/theme');
+            if (res.ok) {
+                const data = await res.json();
+                if (data.ok && data.theme) return data.theme;
+            }
+        } catch (e) {}
+
+        return defaultThemes.length > 0 ? defaultThemes[0] : null;
+    }
+
+    async function renderThemeGrid() {
+        const grid = document.getElementById('ThemeGrid');
+        if (!grid) return;
+
+        const activeTheme = await getActiveThemeData();
+        grid.innerHTML = '';
+
+        defaultThemes.forEach(theme => {
+            const isSelected = activeTheme && (
+                theme.id === activeTheme.id || 
+                (theme.bgBase === activeTheme.bgBase && theme.accent === activeTheme.accent)
+            );
+
+            const card = document.createElement('div');
+            card.className = `theme-card ${isSelected ? 'active' : ''}`;
+            card.onclick = () => selectTheme(theme);
+
+            card.innerHTML = `
+                <div class="theme-card-header">
+                    <span class="theme-card-name">${theme.name}</span>
+                    ${isSelected ? '<span class="theme-active-badge">✓ Activo</span>' : ''}
+                </div>
+                <div class="theme-color-swatches" style="background-color: ${theme.bgBase};">
+                    <div class="swatch-item" style="background-color: ${theme.surface}; border-color: ${theme.border};"></div>
+                    <div class="swatch-item" style="background-color: ${theme.accent};"></div>
+                    <div class="swatch-item" style="background-color: ${theme.text};"></div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function selectTheme(theme) {
+        applyThemeVariables(theme);
+        renderThemeGrid();
+        showToast(`✓ Tema "${theme.name}" aplicado`);
+    }
+
+    function applyCustomJsonTheme() {
+        const textarea = document.getElementById('ThemeJsonInput');
+        const jsonText = textarea.value.trim();
+
+        if (!jsonText) {
+            showToast('Por favor pega una estructura JSON válida');
+            return;
+        }
+
+        try {
+            const customTheme = JSON.parse(jsonText);
+            if (!customTheme.bgBase || !customTheme.accent) {
+                throw new Error('El JSON debe incluir al menos bgBase y accent');
+            }
+
+            customTheme.id = customTheme.id || 'custom-' + Date.now();
+            customTheme.name = customTheme.name || 'Tema Personalizado';
+
+            applyThemeVariables(customTheme);
+            renderThemeGrid();
+            showToast(`✓ Tema "${customTheme.name}" aplicado correctamente`);
+        } catch (err) {
+            showToast('Error en JSON: ' + err.message);
+        }
+    }
+
+    function downloadThemeTemplate() {
+        const template = {
+            "id": "mi-tema-personalizado",
+            "name": "Mi Tema Personalizado",
+            "bgBase": "#faf8f5",
+            "surface": "#ffffff",
+            "surfaceHover": "#f3efe9",
+            "text": "#1a1a1a",
+            "textHeading": "#111111",
+            "textMuted": "#666360",
+            "accent": "#c85a32",
+            "accentHover": "#b04923",
+            "accentBg": "rgba(200, 90, 50, 0.08)",
+            "border": "#e6e2dc",
+            "borderHover": "#c5c0b8",
+            "danger": "#c93b2b",
+            "dangerHover": "#a82e20",
+            "dangerBg": "rgba(201, 59, 43, 0.08)"
+        };
+
+        const blob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'netdrop-tema-plantilla.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('✓ Plantilla JSON descargada');
+    }
+
+    function loadThemeFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const textarea = document.getElementById('ThemeJsonInput');
+            if (textarea) {
+                textarea.value = e.target.result;
+                showToast('✓ Archivo JSON cargado en el editor. Haz clic en "Aplicar Tema JSON"');
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function exportActiveThemeJson() {
+        const data = localStorage.getItem('netdrop_active_theme_data');
+        const textarea = document.getElementById('ThemeJsonInput');
+        if (data && textarea) {
+            textarea.value = JSON.stringify(JSON.parse(data), null, 2);
+            showToast('✓ JSON del tema activo cargado en el editor');
+        }
+    }
+
+    function resetToDefaultTheme() {
+        if (defaultThemes.length > 0) {
+            selectTheme(defaultThemes[0]);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadThemes);
+</script>
+
+{% endblock %}

@@ -35,9 +35,10 @@ class MiApp(QWidget):
 
     def establecer_icono(self):
         """Busca el archivo logo.png en la carpeta del script."""
-        ruta_icono = os.path.join(self.ruta_base, "../static/Logo/logo-sin-fondo.png")
+        ruta_icono = os.path.abspath(os.path.join(self.ruta_base, "../static/Logo/logo-sin-fondo.png"))
         if os.path.exists(ruta_icono):
-            self.setWindowIcon(QIcon(ruta_icono))
+            icon = QIcon(ruta_icono)
+            self.setWindowIcon(icon)
 
     def cargar_estilos(self):
         """Carga el archivo QSS y lo aplica."""
@@ -50,6 +51,13 @@ class MiApp(QWidget):
 
 def Iniciador():
     app = QApplication(sys.argv)
+    app.setApplicationName("NetDrop Desktop")
+    
+    ruta_base = os.path.dirname(os.path.abspath(__file__))
+    ruta_icono = os.path.abspath(os.path.join(ruta_base, "../static/Logo/logo-sin-fondo.png"))
+    if os.path.exists(ruta_icono):
+        app.setWindowIcon(QIcon(ruta_icono))
+
     ventana = MiApp()
     ventana.show()
     sys.exit(app.exec())

@@ -1,20 +1,22 @@
 {% extends "layout.html" %}
 {% block content %}
-    <div class="Generator-QR">
-        <div class="Container">
-            <img src="{{ url_for('qr_image') }}" alt="Código QR" class="QR-Image">
+
+<div class="page-container">
+    <div class="qr-layout">
+        <div class="qr-box">
+            <img src="{{ url_for('qr_image') }}" alt="Código QR de NetDrop" class="qr-img">
         </div>
 
-        <div class="Text">
-            <h3>Instrucciones</h3>
-            <ul class="Instructions-List">
-                <li>Conectado a la misma red WiFi</li>
-                <li>Abre la cámara de tu dispositivo</li>
-                <li>Escanea este código QR</li>
-                <li>Se abrirá automáticamente NetDrop</li>
-            </ul>
-
-            <a class="regenerate-btn" href="/qr">Generar Nuevo QR</a>
+        <div class="qr-details">
+            <h1 class="page-title">Escanear para conectar</h1>
+            <p class="page-subtitle">Apunta con la cámara de tu teléfono móvil conectado a la misma red Wi-Fi para acceder a NetDrop en el navegador.</p>
+            
+            <div class="qr-actions">
+                <a class="btn-primary" href="/qr">Generar nuevo QR</a>
+                <a class="btn-subtle" href="/">Ver archivos</a>
+            </div>
         </div>
     </div>
+</div>
+
 {% endblock %}

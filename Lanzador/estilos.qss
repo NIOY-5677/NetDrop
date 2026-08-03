@@ -1,27 +1,40 @@
-/* estilos.qss */
+/* estilos.qss - NetDrop Desktop Launcher Design System */
 QWidget {
-    background-color: #ffffff; /* Fondo azul casi negro muy profundo */
-    font-family: 'Segoe UI', sans-serif;
+    background-color: #FAF8F5;
+    font-family: 'DM Sans', 'Segoe UI', sans-serif;
+    color: #1A1A1A;
 }
 
-QLabel {
-    color: #f8fafc;
-    font-size: 18px;
-    font-weight: 600;
-}
-
-QPushButton {
-    background-color: #ffffff; /* Verde esmeralda */
-    color: #000000;
-    border-radius: 10px;
+QPushButton#btn_abrir {
+    background-color: #C85A32;
+    color: #FFFFFF;
+    border-radius: 8px;
     padding: 10px;
     font-size: 14px;
-    font-weight: bold;
-    border: 1px solid #a7a7a7;
-    box-shadow: #a7a7a7;
-    
-    /* DIMENSIONES MÍNIMAS */
-    min-width: 150px;
-    min-height: 45px;
-    weight: 150px;
+    font-weight: 600;
+    border: none;
+    min-width: 160px;
+    min-height: 44px;
+}
+
+QPushButton#btn_abrir:hover {
+    background-color: #B04923;
+}
+
+QPushButton#btn_cerrar {
+    background-color: #FFFFFF;
+    color: #666360;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid #E6E2DC;
+    min-width: 160px;
+    min-height: 44px;
+}
+
+QPushButton#btn_cerrar:hover {
+    background-color: #F3EFE9;
+    color: #111111;
+    border-color: #C5C0B8;
 }

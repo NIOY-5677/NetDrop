@@ -1,41 +1,35 @@
 /* ================================
-   VARIABLES GLOBALES - COLORES Y ESPACIOS
+   DISEÑO EDITORIAL MINIMALISTA (SIN DEGRADADOS / PLANO)
    ================================ */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..600;1,9..40,400..600&family=Space+Mono&display=swap');
+
 :root {
-    /* COLORES PRINCIPALES */
-    --color-primary: #000000;
-    --color-secondary: #ffffff;
+    /* PALETA CÁLIDA Y PLANA */
+    --color-bg-base: #faf8f5;
+    --color-surface: #ffffff;
+    --color-surface-hover: #f3efe9;
     
-    /* COLORES DE TEXTO */
-    --color-text: #000000;
-    --color-text-light: #555555;
-    --color-text-muted: #444444;
-    --color-text-secondary: #333333;
-    --color-text-tertiary: #202020;
-    --color-gray: #666666;
+    /* TINTA Y TEXTO */
+    --color-text: #1a1a1a;
+    --color-text-heading: #111111;
+    --color-text-muted: #666360;
+    --color-text-subtle: #8c8884;
     
-    /* COLORES DE FONDO */
-    --color-bg-light: #f0f0f0;
-    --color-bg-lightest: #f9f9f9;
+    /* ACENTO PLANO */
+    --color-accent: #c85a32;
+    --color-accent-hover: #b04923;
+    --color-accent-bg: rgba(200, 90, 50, 0.08);
     
-    /* COLORES GRISES */
-    --color-gray-light: #e6e6e6;
-    --color-gray-lighter: #d8d8d8;
-    --color-gray-lightest: #f9f9f9;
-    --color-gray-border: #d3d3d3;
-    --color-gray-border-light: #cfcfcf;
-    --color-gray-border-lightest: #d4d4d4;
+    /* PELIGRO */
+    --color-danger: #c93b2b;
+    --color-danger-hover: #a82e20;
+    --color-danger-bg: rgba(201, 59, 43, 0.08);
     
-    /* COLORES DE ACCIÓN */
-    --color-danger: #c62828;
-    --color-danger-dark: #a61f1f;
-    --color-success: #28a745;
-    --color-error: #e74c3c;
+    /* BORDES SUAVES */
+    --color-border: #e6e2dc;
+    --color-border-hover: #c5c0b8;
     
-    /* COLORES TRANSPARENTES */
-    --color-overlay: rgba(0, 0, 0, 0.55);
-    --color-shadow: rgba(0, 0, 0, 0.25);
-    --color-shadow-soft: rgba(0, 0, 0, 0.1);
-    --color-shadow-strong: rgba(0, 0, 0, 0.12);
-    --color-border-light: rgba(0, 0, 0, 0.08);
+    /* TIPOGRAFÍA EDITORIAL */
+    --font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'Space Mono', monospace;
 }

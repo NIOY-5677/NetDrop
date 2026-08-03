@@ -1,0 +1,5 @@
+Flask==3.0.3
+werkzeug==3.0.3
+pywebview==5.1
+qrcode==7.4.2
+pillow==10.3.0

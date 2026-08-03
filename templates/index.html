@@ -1,130 +1,406 @@
-{% extends "layout.html" %} {% block content %}
+{% extends "layout.html" %}
 
-<button class="recarga-web" onclick="UPIniciarRecarga(this)" title="Recargar Web">
-  <img src="{{ url_for('static', filename='iconos/refresh.svg') }}" alt="Icono Recargar">
-</button>
+{% block content %}
 
-<section class="File-Contenedor">
- {% for file_item in File %}
-  <div class="File_items">
-    <picture class="File_Contenido">
-        {% if file_item.tipo in ["jpg", "jpeg", "png", "gif"] %}
-        <img
-          class="Icono_Documento"
-          src="{{ file_item.ruta }}"
-          alt="{{ file_item.nombre }}"
-        />
-        {% elif file_item.tipo == "mp4" %}
-        <video class="video-js">
-          <source src="{{ file_item.ruta }}" type="video/mp4" />
-        </video>
-        {% elif file_item.tipo in ["rar", "zip"] %}
-        <img
-          class="zip"
-          /* Asegúrate de tener una imagen de un zip/carpeta en tu carpeta
-              estática */
-          src="{{ url_for('static', filename='iconos/zip.svg') }}"
-          alt="Archivo comprimido"
-        />
-        {% elif file_item.tipo in ["aac", "wav", "mp3", "m4a", "opus"] %}
-        <img
-          src="{{ url_for('static', filename='iconos/sound.svg') }}"
-          alt="Sonido"
-        />
-        {% elif file_item.tipo in ["py", "js", "html", "css", "txt", "java", "jav", "exe"] %}
-        <img
-          src="{{ url_for('static', filename='iconos/exe.svg') }}"
-          alt="Código"
-        />
-        {% endif %}
-    </picture>
+<div class="page-container" id="HomeContainer">
 
-    <div class="File_Detalles">
-      <span class="Titulo">{{ file_item.nombre.rsplit('.', 1)[0] }}</span>
-      <span class="Tipo">Tipo: {{ file_item.tipo|upper if file_item.tipo else "SIN TIPO" }}</span>
-      <span class="Fecha">Fecha: {{ file_item.fecha }}</span>
+    <!-- Subida Rápida en Homepage (UX Dropzone) -->
+    <div class="quick-dropzone" id="GlobalDropZone">
+        <input type="file" id="QuickFileInput" class="file-input-overlay" multiple />
+        <div class="dropzone-content">
+            <span class="dropzone-text">Arrastra un archivo aquí para compartirlo al instante</span>
+            <span class="dropzone-subtext">o haz clic en el recuadro para explorar tus carpetas</span>
+        </div>
+        <div class="dropzone-progress" id="QuickProgressSection" style="display: none;">
+            <div class="progress-bar-track">
+                <div class="progress-bar-fill" id="QuickProgressBar" style="transform: scaleX(0);"></div>
+            </div>
+            <span class="progress-label" id="QuickProgressLabel">Subiendo...</span>
+        </div>
     </div>
-    <div class="Acciones">
-      <a href="#" class="delete-link" title="Eliminar archivo" onclick="openDeleteModal('{{ file_item.nombre }}'); return false;">
-          Eliminar
-        <img src="{{ url_for('static', filename='iconos/trash.svg') }}" alt="Eliminar">
-      </a>
-      <a href="/descarga/{{ file_item.nombre }}" class="download-link" title="Descargar archivo">
-        Descargar
-        <img src="{{ url_for('static', filename='iconos/descarga.svg') }}" alt="Descargar">
-      </a>
+
+    <!-- Barra de Búsqueda y Filtros UX -->
+    <div class="search-filter-bar">
+        <div class="search-input-wrapper">
+            <input type="text" id="SearchInput" class="search-input" placeholder="Buscar archivo por nombre..." oninput="filterFiles()" />
+            <button type="button" class="btn-clear-search" id="ClearSearchBtn" onclick="clearSearch()" style="display: none;">&times;</button>
+        </div>
+        <div class="filter-chips">
+            <button type="button" class="filter-chip active" onclick="setFilter('all', this)">Todos</button>
+            <button type="button" class="filter-chip" onclick="setFilter('image', this)">Imágenes</button>
+            <button type="button" class="filter-chip" onclick="setFilter('doc', this)">Documentos</button>
+            <button type="button" class="filter-chip" onclick="setFilter('media', this)">Video / Audio</button>
+            <button type="button" class="filter-chip" onclick="setFilter('code', this)">Código</button>
+        </div>
     </div>
-  </div>
-  {% endfor %}
-</section>
 
-{% if not File %}
-<section class="No-File">
-  <picture>
-    <img src="{{url_for('static', filename='iconos/file.svg')}}" alt="">
-  </picture>
+    {% if File %}
+    <div class="file-list-container" id="FileListContainer">
+        <div class="file-list-header">
+            <span class="file-count-label">{{ File|length }} {% if File|length == 1 %}archivo disponible{% else %}archivos disponibles{% endif %}</span>
+        </div>
+        
+        <div class="file-list-body" id="FileListBody">
+            {% for file_item in File %}
+            {% set ext = file_item.tipo|lower if file_item.tipo else '' %}
+            <div class="file-item-card" 
+                 data-name="{{ file_item.nombre|lower }}" 
+                 data-type="{{ ext }}">
+                
+                <div class="file-item-main" onclick="openPreviewModal('{{ file_item.nombre }}', '{{ ext }}')">
+                    <div class="file-icon-box type-{{ ext }}">
+                        {% if ext in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'heic'] %}
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        {% elif ext in ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'] %}
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                        {% elif ext in ['mp3', 'wav', 'aac', 'flac', 'm4a', 'opus'] %}
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                        {% elif ext in ['py', 'js', 'html', 'css', 'json', 'java', 'c', 'cpp', 'sh', 'sql', 'xml'] %}
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                        {% elif ext in ['zip', 'rar', '7z', 'tar', 'gz'] %}
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                        {% else %}
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        {% endif %}
+                    </div>
 
-  <h2>No hay archivos</h2>
+                    <div class="file-info">
+                        <span class="file-title-text" title="{{ file_item.nombre }}">{{ file_item.nombre }}</span>
+                        <div class="file-meta-subtext">
+                            <span class="meta-tag">{{ file_item.tipo|upper if file_item.tipo else 'ARCHIVO' }}</span>
+                            <span class="meta-dot">•</span>
+                            <span class="meta-size">{{ file_item.tamano_legible if file_item.tamano_legible else 'N/A' }}</span>
+                            <span class="meta-dot">•</span>
+                            <span class="meta-date">{{ file_item.fecha }}</span>
+                        </div>
+                    </div>
+                </div>
 
-  <p>En este mometo no hay ningun archivo para mostrar</p>
+                <div class="file-actions-bar">
+                    <button type="button" class="btn-action-icon preview" onclick="openPreviewModal('{{ file_item.nombre }}', '{{ ext }}')" title="Ver vista previa">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <span>Ver</span>
+                    </button>
 
-  <a href="/update">Subir archivo</a>
-</section>
-  {% endif %}
-</section>
+                    <button type="button" class="btn-action-icon copy" onclick="copyFileLink('{{ file_item.nombre }}')" title="Copiar enlace directo">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                        <span>Copiar</span>
+                    </button>
 
-<div id="deleteModal" class="delete-modal">
-  <div class="delete-modal-content">
-    <h2>Eliminar archivo</h2>
-    <p id="deleteModalMessage">¿Seguro que quieres eliminar este archivo?</p>
-    <div class="delete-modal-actions">
-      <button type="button" class="delete-modal-btn delete-modal-no" onclick="closeDeleteModal()">
-        No
-      </button>
-      <button type="button" class="delete-modal-btn delete-modal-yes" id="deleteModalYesBtn" onclick="confirmDeleteFile()">
-        Sí, eliminar
-      </button>
+                    <a href="/descarga/{{ file_item.nombre }}" class="btn-action-icon download" title="Descargar archivo">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <span>Bajar</span>
+                    </a>
+
+                    <button type="button" class="btn-action-icon delete" onclick="openDeleteModal('{{ file_item.nombre }}')" title="Eliminar archivo">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    </button>
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+
+        <div id="NoSearchResults" class="no-results-state" style="display: none;">
+            <p class="no-results-text">No se encontraron archivos que coincidan con la búsqueda.</p>
+        </div>
     </div>
-  </div>
+    {% else %}
+    <div class="empty-state-card">
+        <div class="empty-icon-circle">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+        </div>
+        <h3 class="empty-title">No hay archivos compartidos aún</h3>
+        <p class="empty-text">Arrastra un archivo en el recuadro superior o haz clic para subir el primero desde tu equipo o teléfono.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal de Vista Previa (Imágenes, Videos, Código, Audio) -->
+<div id="previewModal" class="modal preview-modal">
+    <div class="modal-content preview-modal-content">
+        <div class="modal-header-row">
+            <h2 id="previewTitle">Vista Previa</h2>
+            <span class="modal-close" onclick="closePreviewModal()">&times;</span>
+        </div>
+        <div id="previewBody" class="preview-body">
+            <div class="preview-loading">Cargando vista previa...</div>
+        </div>
+        <div class="modal-actions">
+            <a id="previewDownloadBtn" href="#" class="modal-btn modal-btn-primary">Descargar</a>
+            <button type="button" class="modal-btn modal-btn-secondary" onclick="closePreviewModal()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Eliminación -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header-row">
+            <h2>Eliminar archivo</h2>
+            <span class="modal-close" onclick="closeDeleteModal()">&times;</span>
+        </div>
+        <p id="deleteModalMessage">¿Estás seguro de que deseas eliminar este archivo?</p>
+        <div class="modal-actions">
+            <button type="button" class="modal-btn modal-btn-secondary" onclick="closeDeleteModal()">Cancelar</button>
+            <button type="button" class="modal-btn modal-btn-danger" id="deleteModalYesBtn" onclick="confirmDeleteFile()">Eliminar</button>
+        </div>
+    </div>
 </div>
 
 <script>
-  let currentFileName = '';
+    let currentFileName = '';
+    let currentFilterType = 'all';
 
-  function openDeleteModal(fileName) {
-    currentFileName = fileName;
-    document.getElementById('deleteModalMessage').textContent = `¿Seguro que quieres eliminar "${fileName}"?`;
-    document.getElementById('deleteModal').style.display = 'flex';
-  }
+    function openPreviewModal(filename, ext) {
+        const modal = document.getElementById('previewModal');
+        const title = document.getElementById('previewTitle');
+        const body = document.getElementById('previewBody');
+        const downloadBtn = document.getElementById('previewDownloadBtn');
 
-  function closeDeleteModal() {
-    document.getElementById('deleteModal').style.display = 'none';
-  }
+        title.textContent = filename;
+        downloadBtn.href = `/descarga/${encodeURIComponent(filename)}`;
+        body.innerHTML = '<div class="preview-loading">Cargando vista previa...</div>';
+        modal.style.display = 'flex';
 
-  function confirmDeleteFile() {
-    const fileName = currentFileName;
-    if (!fileName) return;
-    
-    // Redirigir a la ruta de Python para eliminar
-    window.location.href = "/eliminar/" + encodeURIComponent(fileName);
-  }
+        const fileUrl = `/archivo/${encodeURIComponent(filename)}`;
+        const imgExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'heic', 'heif'];
+        const videoExts = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'];
+        const audioExts = ['mp3', 'wav', 'aac', 'opus', 'flac', 'm4a'];
+        const codeExts = ['txt', 'py', 'js', 'html', 'css', 'json', 'md', 'java', 'c', 'cpp', 'sh', 'sql', 'xml', 'yml', 'yaml', 'ini', 'log', 'env'];
 
-  function UPIniciarRecarga(btn) {
-    if (btn.classList.contains('UP-activado')) return;
-    btn.classList.add('UP-activado');
-    btn.style.pointerEvents = 'none';
-
-    setTimeout(() => {
-      window.location.reload();
-    }, 500);
-  }
-
-  window.onclick = function(event) {
-    const deleteModal = document.getElementById('deleteModal');
-    if (event.target == deleteModal) {
-      deleteModal.style.display = 'none';
+        if (imgExts.includes(ext)) {
+            body.innerHTML = `<div class="preview-media-container"><img src="${fileUrl}" alt="${filename}" class="preview-media-img" /></div>`;
+        } else if (videoExts.includes(ext)) {
+            body.innerHTML = `<div class="preview-media-container"><video src="${fileUrl}" controls autoplay class="preview-media-video"></video></div>`;
+        } else if (audioExts.includes(ext)) {
+            body.innerHTML = `<div class="preview-audio-container"><audio src="${fileUrl}" controls autoplay class="preview-media-audio"></audio></div>`;
+        } else if (codeExts.includes(ext) || ext === '') {
+            fetch(fileUrl)
+                .then(res => {
+                    if (!res.ok) throw new Error('No se pudo cargar el contenido');
+                    return res.text();
+                })
+                .then(text => {
+                    const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    body.innerHTML = `<pre class="preview-code-pre"><code class="preview-code-content">${escaped}</code></pre>`;
+                })
+                .catch(err => {
+                    body.innerHTML = `<p class="preview-error">No se pudo cargar la vista previa del archivo: ${err.message}</p>`;
+                });
+        } else {
+            body.innerHTML = `
+                <div class="preview-fallback">
+                    <p>Vista previa en línea no disponible para archivos <strong>.${ext.toUpperCase()}</strong>.</p>
+                    <p>Puedes descargarlo directamente a tu equipo.</p>
+                </div>
+            `;
+        }
     }
-  }
+
+    function closePreviewModal() {
+        const modal = document.getElementById('previewModal');
+        const body = document.getElementById('previewBody');
+        if (modal) modal.style.display = 'none';
+        if (body) body.innerHTML = '';
+    }
+
+    function copyFileLink(fileName) {
+        const downloadUrl = `${window.location.origin}/descarga/${encodeURIComponent(fileName)}`;
+        navigator.clipboard.writeText(downloadUrl).then(() => {
+            showToast('✓ Enlace copiado al portapapeles');
+        }).catch(() => {
+            showToast('Enlace: ' + downloadUrl);
+        });
+    }
+
+    function openDeleteModal(fileName) {
+        currentFileName = fileName;
+        document.getElementById('deleteModalMessage').textContent = `¿Eliminar "${fileName}" de la red local?`;
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+    }
+
+    function confirmDeleteFile() {
+        const fileName = currentFileName;
+        if (!fileName) return;
+        window.location.href = "/eliminar/" + encodeURIComponent(fileName);
+    }
+
+    /* Búsqueda y Filtrado Instantáneo */
+    function filterFiles() {
+        const searchInput = document.getElementById('SearchInput');
+        const query = searchInput.value.toLowerCase().trim();
+        const clearBtn = document.getElementById('ClearSearchBtn');
+        const cards = document.querySelectorAll('.file-item-card');
+        let visibleCount = 0;
+
+        clearBtn.style.display = query ? 'inline-block' : 'none';
+
+        cards.forEach(card => {
+            const name = card.getAttribute('data-name') || '';
+            const type = card.getAttribute('data-type') || '';
+            
+            const matchesQuery = !query || name.includes(query);
+            let matchesCategory = true;
+
+            if (currentFilterType === 'image') {
+                matchesCategory = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'svg'].includes(type);
+            } else if (currentFilterType === 'doc') {
+                matchesCategory = ['pdf', 'doc', 'docx', 'txt', 'md', 'xls', 'xlsx', 'ppt', 'pptx'].includes(type);
+            } else if (currentFilterType === 'media') {
+                matchesCategory = ['mp4', 'mov', 'avi', 'mkv', 'mp3', 'wav', 'aac', 'opus', 'flac'].includes(type);
+            } else if (currentFilterType === 'code') {
+                matchesCategory = ['py', 'js', 'html', 'css', 'json', 'java', 'c', 'cpp', 'sh', 'zip', 'rar'].includes(type);
+            }
+
+            if (matchesQuery && matchesCategory) {
+                card.style.display = 'flex';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        const noResults = document.getElementById('NoSearchResults');
+        if (noResults) {
+            noResults.style.display = (visibleCount === 0 && cards.length > 0) ? 'block' : 'none';
+        }
+    }
+
+    function clearSearch() {
+        const searchInput = document.getElementById('SearchInput');
+        searchInput.value = '';
+        filterFiles();
+    }
+
+    function setFilter(category, btn) {
+        currentFilterType = category;
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        filterFiles();
+    }
+
+    /* Subida Instantánea al Arrastrar */
+    const quickFileInput = document.getElementById('QuickFileInput');
+    const globalDropZone = document.getElementById('GlobalDropZone');
+    const quickProgress = document.getElementById('QuickProgressSection');
+    const quickBar = document.getElementById('QuickProgressBar');
+    const quickLabel = document.getElementById('QuickProgressLabel');
+
+    if (quickFileInput) {
+        ['dragenter', 'dragover'].forEach(name => {
+            globalDropZone.addEventListener(name, (e) => {
+                e.preventDefault();
+                globalDropZone.classList.add('drag-over');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(name => {
+            globalDropZone.addEventListener(name, (e) => {
+                e.preventDefault();
+                globalDropZone.classList.remove('drag-over');
+            });
+        });
+
+        quickFileInput.addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                handleQuickUpload(e.target.files[0]);
+            }
+        });
+    }
+
+    async function handleQuickUpload(file) {
+        if (!file || !window.fetch || !file.slice) return;
+
+        const chunkSize = 2 * 1024 * 1024;
+        const totalChunks = Math.max(1, Math.ceil(file.size / chunkSize));
+        const uploadId = window.crypto && window.crypto.randomUUID
+            ? window.crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+        quickProgress.style.display = 'block';
+        quickBar.style.transform = 'scaleX(0)';
+        quickLabel.textContent = `Subiendo ${file.name}...`;
+
+        try {
+            for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+                const start = chunkIndex * chunkSize;
+                const end = Math.min(start + chunkSize, file.size);
+                let chunkBlob = file.slice(start, end);
+                const formData = new FormData();
+
+                formData.append('file_chunk', chunkBlob, file.name);
+                formData.append('filename', file.name);
+                formData.append('upload_id', uploadId);
+                formData.append('chunk_index', chunkIndex);
+                formData.append('total_chunks', totalChunks);
+                formData.append('total_size', file.size);
+
+                const response = await fetch('/upload-chunk', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                chunkBlob = null;
+                const text = await response.text();
+                const result = text ? JSON.parse(text) : {};
+                if (!response.ok || !result.ok) {
+                    throw new Error(result.error || 'Error al subir parte');
+                }
+
+                const percent = Math.round(((chunkIndex + 1) / totalChunks) * 100);
+                quickBar.style.transform = `scaleX(${percent / 100})`;
+                quickLabel.textContent = `Subiendo ${file.name} (${percent}%)...`;
+
+                await new Promise(resolve => setTimeout(resolve, 20));
+            }
+
+            quickLabel.textContent = '✓ Subida completada';
+            showToast('✓ Archivo subido exitosamente');
+            setTimeout(() => {
+                window.location.reload();
+            }, 400);
+        } catch (error) {
+            const msg = error.message.includes('Memory') || error.message.includes('Quota')
+                ? 'Memoria del móvil saturada. Cierra otras apps o pestañas.'
+                : error.message;
+            quickLabel.textContent = msg;
+            showToast('Error: ' + msg);
+        }
+    }
+
+    /* Sincronización en Tiempo Real entre PC y Móvil (Live Sync) */
+    let lastSyncCount = null;
+    let lastSyncMtime = null;
+
+    async function checkLiveSync() {
+        if (quickProgress && quickProgress.style.display === 'block') return;
+        try {
+            const res = await fetch('/api/sync-status');
+            if (!res.ok) return;
+            const data = await res.json();
+            
+            if (lastSyncCount !== null && (data.count !== lastSyncCount || data.latest_mtime !== lastSyncMtime)) {
+                showToast('✓ Cambio de archivos detectado en la red');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 400);
+            }
+            lastSyncCount = data.count;
+            lastSyncMtime = data.latest_mtime;
+        } catch (e) {}
+    }
+
+    setInterval(checkLiveSync, 2000);
+
+    window.addEventListener('click', function(event) {
+        const previewModal = document.getElementById('previewModal');
+        if (event.target === previewModal) closePreviewModal();
+    });
 </script>
 
 {% endblock %}

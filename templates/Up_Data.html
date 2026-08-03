@@ -1,67 +1,167 @@
 {% extends "layout.html" %}
 {% block content %}
 
-<div class="FormularioUP">
-    <form action="/upload" method="POST" enctype="multipart/form-data" class="UpData">
-        
-        <label for="UPFile" class="Custom-Label">
-            <div id="UPPreviewContainer">
-                <span class="UPIcon">
-                    <img src="{{ url_for('static', filename='iconos/file.svg') }}" alt="">
-                </span> 
+<div class="page-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h1 class="page-title">Subir archivo</h1>
+            <p class="page-subtitle">Cualquier equipo en la red podrá descargarlo.</p>
+        </div>
+
+        <form action="/upload" method="POST" enctype="multipart/form-data" class="upload-form" id="UploadForm">
+            
+            <div class="drop-zone" id="DropZone">
+                <input type="file" name="UPFile" id="UPFile" class="file-input" required />
+                <div class="drop-zone-inner">
+                    <p class="drop-title" id="DropTitle">Arrastra un archivo aquí</p>
+                    <p class="drop-subtitle" id="DropSubtitle">o haz clic para explorar en tu equipo</p>
+                    <span class="file-badge" id="FileInfoBadge" style="display: none;"></span>
+                </div>
             </div>
-            <span id="UPFileName">Seleccionar archivo</span>
-        </label>
-        
-        <input type="file" name="UPFile" id="UPFile" class="UpInput" required />
-        
-       <input class="Des" type="submit" value="SUBIR"/>
-    </form>
+            
+            <div class="progress-section" id="ProgressSection" style="display: none;">
+                <div class="progress-info">
+                    <span id="UploadStatus">Subiendo...</span>
+                    <span id="UploadPercentage" class="mono">0%</span>
+                </div>
+                <div class="progress-track">
+                    <div id="ProgressBarFill" class="progress-fill" style="transform: scaleX(0);"></div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="/" class="btn-subtle">Cancelar</a>
+                <button type="submit" class="btn-primary" id="SubmitBtn" disabled>Enviar archivo</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script>
-    document.getElementById('UPFile').addEventListener('change', function(event) {
-    const UPSelectedFile = event.target.files[0];
-    const UPFileNameDisplay = document.getElementById('UPFileName');
-    const UPPreviewContainer = document.getElementById('UPPreviewContainer');
-    
-    if (UPSelectedFile) {
-        // Actualizar el texto con el nombre del archivo
-        UPFileNameDisplay.textContent = UPSelectedFile.name;
-        
-        // Limpiar el contenedor para la nueva vista previa
-        UPPreviewContainer.innerHTML = '';
-        
-        const UPFileType = UPSelectedFile.type;
-
-        // Lógica de Vista Previa para IMÁGENES
-        if (UPFileType.startsWith('image/')) {
-            const UPImg = document.createElement('img');
-            UPImg.src = URL.createObjectURL(UPSelectedFile);
-            UPImg.classList.add('UPPreviewMedia');
-            UPPreviewContainer.appendChild(UPImg);
-        } 
-        // Lógica de Vista Previa para VIDEOS
-        else if (UPFileType.startsWith('video/')) {
-            const UPVideo = document.createElement('video');
-            UPVideo.src = URL.createObjectURL(UPSelectedFile);
-            UPVideo.classList.add('UPPreviewMedia');
-            UPVideo.muted = true;
-            UPVideo.play(); 
-            UPPreviewContainer.appendChild(UPVideo);
-        } 
-        // Icono genérico para otros archivos (PDF, Audio, etc.)
-        else {
-            UPPreviewContainer.innerHTML = '<span style="font-size: 50px;"><img src="{{ url_for("static", filename="iconos/file.svg") }}" alt="Archivo"></span>';
-        }
-
-        // Cambio visual de borde para confirmar selección
-        document.querySelector('.Custom-Label').style.borderColor = '#000000';
-    } else {
-        UPFileNameDisplay.textContent = "Seleccionar archivo";
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
     }
-});
-</script>
 
+    const fileInput = document.getElementById('UPFile');
+    const dropZone = document.getElementById('DropZone');
+    const dropTitle = document.getElementById('DropTitle');
+    const dropSubtitle = document.getElementById('DropSubtitle');
+    const fileInfoBadge = document.getElementById('FileInfoBadge');
+    const submitBtn = document.getElementById('SubmitBtn');
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-active'), false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-active'), false);
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            handleFileSelect(files[0]);
+        }
+    });
+
+    fileInput.addEventListener('change', function(event) {
+        if (event.target.files[0]) {
+            handleFileSelect(event.target.files[0]);
+        }
+    });
+
+    function handleFileSelect(file) {
+        dropTitle.textContent = file.name;
+        dropSubtitle.textContent = "Haz clic o arrastra otro archivo para cambiarlo";
+        fileInfoBadge.textContent = formatFileSize(file.size);
+        fileInfoBadge.style.display = 'inline-block';
+        dropZone.classList.add('has-file');
+        submitBtn.disabled = false;
+    }
+
+    document.getElementById('UploadForm').addEventListener('submit', async function(event) {
+        const file = fileInput.files[0];
+        if (!file || !window.fetch || !file.slice) return;
+
+        event.preventDefault();
+
+        const progressSection = document.getElementById('ProgressSection');
+        const progressFill = document.getElementById('ProgressBarFill');
+        const statusText = document.getElementById('UploadStatus');
+        const percentText = document.getElementById('UploadPercentage');
+        
+        const chunkSize = 2 * 1024 * 1024; // 2MB por chunk para evitar picos de memoria RAM en móviles
+        const totalChunks = Math.max(1, Math.ceil(file.size / chunkSize));
+        const uploadId = window.crypto && window.crypto.randomUUID
+            ? window.crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+        submitBtn.disabled = true;
+        progressSection.style.display = 'block';
+        progressFill.style.transform = 'scaleX(0)';
+        statusText.textContent = 'Subiendo...';
+        percentText.textContent = '0%';
+
+        try {
+            for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+                const start = chunkIndex * chunkSize;
+                const end = Math.min(start + chunkSize, file.size);
+                let chunkBlob = file.slice(start, end);
+                const formData = new FormData();
+
+                formData.append('file_chunk', chunkBlob, file.name);
+                formData.append('filename', file.name);
+                formData.append('upload_id', uploadId);
+                formData.append('chunk_index', chunkIndex);
+                formData.append('total_chunks', totalChunks);
+                formData.append('total_size', file.size);
+
+                const response = await fetch('/upload-chunk', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                chunkBlob = null; // Liberar referencia en memoria
+                const text = await response.text();
+                const result = text ? JSON.parse(text) : {};
+                if (!response.ok || !result.ok) {
+                    throw new Error(result.error || 'Error al subir parte');
+                }
+
+                const percent = Math.round(((chunkIndex + 1) / totalChunks) * 100);
+                progressFill.style.transform = `scaleX(${percent / 100})`;
+                percentText.textContent = percent + '%';
+                statusText.textContent = `Enviando (${chunkIndex + 1}/${totalChunks})...`;
+
+                // Pequeña pausa para permitir la recolección de basura (RAM) en teléfonos
+                await new Promise(resolve => setTimeout(resolve, 20));
+            }
+
+            statusText.textContent = 'Subido correctamente';
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 400);
+        } catch (error) {
+            statusText.textContent = error.message.includes('Quota') || error.message.includes('Memory')
+                ? 'Memoria del navegador llena. Cierra otras pestañas e intenta de nuevo.'
+                : error.message;
+            submitBtn.disabled = false;
+        }
+    });
+</script>
 
 {% endblock %}

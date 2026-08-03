@@ -3,53 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetDrop - Compartir Archivos en Red Local</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..600;1,9..40,400..600&family=Space+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout-variables.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/componentes.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/Files.css') }}">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='Logo/logo-sin-fondo.png') }}" type="image/x-icon">
-    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
-    <title>NetDrop - NioyDev</title>
+    <link rel="icon" href="{{ url_for('static', filename='Logo/logo-sin-fondo.png') }}" type="image/png">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='Logo/logo-sin-fondo.png') }}" type="image/png">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='Logo/logo-sin-fondo.png') }}">
+    <script src="{{ url_for('static', filename='js/theme-engine.js') }}"></script>
 </head>
 <body>
 
+    <header class="app-header">
+        <div class="header-container">
+            <a href="/" class="brand-logo">
+                <img src="{{ url_for('static', filename='Logo/logo-sin-fondo.png') }}" alt="NetDrop Logo" class="logo-img">
+                <span class="brand-name">NetDrop</span>
+            </a>
 
-    <nav role="navigation">
-  <div id="menuToggle">
-    <input type="checkbox" />
-    <span></span>
-    <span></span>
-    <span></span>
-    <ul id="menu">
-      
-      <a href="/"><li>Inicio</li></a>
-      <a href="/update"><li>Subir</li></a>
-      <a href="/qrgenerator"><li>Qr</li></a>
-    </ul>
-  </div>
-</nav>
+            <nav class="nav-links">
+                <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">Archivos</a>
+                <a href="/update" class="nav-link {% if request.path == '/update' %}active{% endif %}">Subir</a>
+                <button type="button" class="nav-link-btn" onclick="openQrModal()" title="Escanear QR para compartir en móvil">Código QR</button>
+                <a href="/settings" class="nav-link nav-settings-btn {% if request.path == '/settings' %}active{% endif %}" title="Ajustes de temas">
+                    <svg class="gear-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                </a>
+            </nav>
+        </div>
+    </header>
 
-
-    <main>
+    <main class="main-content">
         {% block content %}
         {% endblock %}
     </main>
 
-    <!-- Modal de Descarga -->
-    <div id="downloadModal" class="modal">
+    <!-- Modal Rápido de Código QR -->
+    <div id="qrModal" class="modal">
         <div class="modal-content">
-            <span class="modal-close" onclick="closeDownloadModal()">&times;</span>
-            <div id="modalBody">
-                <h2 id="modalTitle"></h2>
-                <p id="modalMessage"></p>
-                <div id="modalButtons" style="display: flex; gap: 10px; justify-content: space-between;">
-                    <button onclick="closeDownloadModal()" class="modal-btn modal-btn-secondary">Denegar</button>
-                    <button onclick="closeDownloadModal()" class="modal-btn" id="primaryBtn">Aceptar</button>
+            <div class="modal-header-row">
+                <h2>Conectar Móvil</h2>
+                <span class="modal-close" onclick="closeQrModal()">&times;</span>
+            </div>
+            <div class="qr-modal-body">
+                <div class="qr-modal-img-frame">
+                    <img src="{{ url_for('qr_image') }}" alt="Código QR" class="qr-modal-img">
+                </div>
+                <p class="qr-modal-ip-text">Escanea el código o ingresa la IP:</p>
+                <div class="ip-copy-box">
+                    <code id="ipAddressText">{{ protocolo if protocolo else 'http' }}://{{ ip_local if ip_local else '127.0.0.1' }}:5000</code>
+                    <button type="button" class="btn-copy-small" onclick="copyIpAddress()">Copiar</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Modal de Confirmación Genérico / Descarga -->
+    <div id="downloadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header-row">
+                <h2 id="modalTitle">Confirmación</h2>
+                <span class="modal-close" onclick="closeDownloadModal()">&times;</span>
+            </div>
+            <div id="modalBody">
+                <p id="modalMessage"></p>
+                <div id="modalButtons" class="modal-actions">
+                    <button onclick="closeDownloadModal()" class="modal-btn modal-btn-secondary">Cancelar</button>
+                    <button onclick="closeDownloadModal()" class="modal-btn modal-btn-primary" id="primaryBtn">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <script src="{{ url_for('static', filename='js/scroll.js') }}"></script>
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script>
+        function showToast(message, duration = 3000) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            // Limpiar formato si el mensaje empieza con icono unicode para comparar mensajes base
+            const cleanMessage = message.replace(/^[✓⚠️ℹ️]\s*/, '');
+
+            // Buscar si ya existe una notificación activa idéntica
+            let existingToast = Array.from(container.children).find(
+                t => t.dataset.baseMessage === cleanMessage && t.classList.contains('show')
+            );
+
+            if (existingToast) {
+                // Incrementar multiplicador (x2, x3, x5...)
+                let count = parseInt(existingToast.dataset.count || '1', 10) + 1;
+                existingToast.dataset.count = count;
+
+                const badge = existingToast.querySelector('.toast-multiplier');
+                if (badge) {
+                    badge.textContent = `x${count}`;
+                    badge.style.display = 'inline-flex';
+                }
+
+                // Animación de rebote táctil
+                existingToast.classList.remove('toast-bounce');
+                void existingToast.offsetWidth; // Force reflow
+                existingToast.classList.add('toast-bounce');
+
+                // Reiniciar temporizador de cierre
+                clearTimeout(existingToast.dismissTimer);
+                existingToast.dismissTimer = setTimeout(() => {
+                    existingToast.classList.remove('show');
+                    setTimeout(() => existingToast.remove(), 300);
+                }, duration);
+
+                return;
+            }
+
+            // Crear notificación rica con icono y estructura
+            const toast = document.createElement('div');
+            toast.className = 'toast-card';
+            toast.dataset.baseMessage = cleanMessage;
+            toast.dataset.count = '1';
+
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="toast-content">
+                    <span class="toast-text">${cleanMessage}</span>
+                </div>
+                <span class="toast-multiplier" style="display: none;">x1</span>
+            `;
+
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+
+            toast.dismissTimer = setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        function openQrModal() {
+            const modal = document.getElementById('qrModal');
+            if (modal) modal.style.display = 'flex';
+        }
+
+        function closeQrModal() {
+            const modal = document.getElementById('qrModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function closeDownloadModal() {
+            const modal = document.getElementById('downloadModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function copyIpAddress() {
+            const ipText = document.getElementById('ipAddressText').textContent;
+            navigator.clipboard.writeText(ipText).then(() => {
+                showToast('✓ Dirección IP copiada al portapapeles');
+            }).catch(() => {
+                showToast('IP: ' + ipText);
+            });
+        }
+
+        window.addEventListener('click', function(event) {
+            const qrModal = document.getElementById('qrModal');
+            const downloadModal = document.getElementById('downloadModal');
+            if (event.target === qrModal) closeQrModal();
+            if (event.target === downloadModal) closeDownloadModal();
+        });
+    </script>
 </body>
 </html>
