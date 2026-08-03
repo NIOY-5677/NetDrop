@@ -5,26 +5,45 @@
 <div class="page-container">
     <div class="page-header">
         <div>
-            <h1 class="page-title">Ajustes & Temas</h1>
-            <p class="page-subtitle">Personaliza la apariencia de NetDrop o importa tus propios temas en JSON.</p>
+            <h1 class="page-title">Ajustes & Configuración</h1>
+            <p class="page-subtitle">Gestiona temas visuales, notificaciones y el comportamiento en segundo plano del sistema.</p>
         </div>
     </div>
 
-    <!-- Sección 1: Seleccionar Tema Predeterminado (5 Temas) -->
-    <div class="settings-section">
-        <h2 class="settings-title">Temas Predeterminados</h2>
-        <div class="theme-grid" id="ThemeGrid">
-            <!-- Cargado dinámicamente desde themes.json -->
-        </div>
+    <!-- Pestañas de Navegación de Ajustes -->
+    <div class="settings-tabs-bar">
+        <button type="button" class="settings-tab-btn active" onclick="switchSettingsTab('themes', this)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.92 0 1.7-.75 1.7-1.67 0-.42-.16-.84-.42-1.17-.28-.35-.45-.78-.45-1.26 0-1.02.83-1.85 1.85-1.85h2.17c2.84 0 5.15-2.31 5.15-5.15C22 6.05 17.52 2 12 2z"/></svg>
+            <span>Temas</span>
+        </button>
+
+        <button type="button" class="settings-tab-btn" onclick="switchSettingsTab('notifications', this)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span>Notificaciones</span>
+        </button>
+
+        <button type="button" class="settings-tab-btn" onclick="switchSettingsTab('background', this)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <span>Segundo Plano</span>
+        </button>
     </div>
 
-    <!-- Sección 2: Crear / Importar Tema desde JSON -->
-    <div class="settings-section">
-        <h2 class="settings-title">Importar o Crear Tema (JSON)</h2>
-        <p class="settings-desc">Descarga la plantilla base, edita tus propios colores o carga un archivo `.json` desde tu equipo para aplicarlo al instante.</p>
-        
-        <div class="json-editor-card">
-            <textarea id="ThemeJsonInput" class="json-textarea" rows="10" spellcheck="false" placeholder='{
+    <!-- SECCIÓN 1: TEMAS -->
+    <div id="TabThemes" class="settings-tab-content active">
+        <div class="settings-section">
+            <h2 class="settings-title">Temas Predeterminados</h2>
+            <p class="settings-desc">Selecciona uno de los 5 temas visuales optimizados para tu pantalla.</p>
+            <div class="theme-grid" id="ThemeGrid">
+                <!-- Cargado dinámicamente -->
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h2 class="settings-title">Importar o Crear Tema (JSON)</h2>
+            <p class="settings-desc">Descarga la plantilla base, edita tus propios colores o carga un archivo `.json` desde tu equipo para aplicarlo al instante.</p>
+            
+            <div class="json-editor-card">
+                <textarea id="ThemeJsonInput" class="json-textarea" rows="10" spellcheck="false" placeholder='{
   "id": "mi-tema-personalizado",
   "name": "Mi Tema Personalizado",
   "bgBase": "#18181b",
@@ -41,14 +60,67 @@
   "danger": "#ef4444"
 }'></textarea>
 
-            <input type="file" id="ThemeFileInput" accept=".json" style="display: none;" onchange="loadThemeFile(event)" />
+                <input type="file" id="ThemeFileInput" accept=".json" style="display: none;" onchange="loadThemeFile(event)" />
 
-            <div class="json-actions">
-                <button type="button" class="btn-subtle" onclick="downloadThemeTemplate()">Descargar Plantilla JSON</button>
-                <button type="button" class="btn-subtle" onclick="document.getElementById('ThemeFileInput').click()">Cargar Archivo JSON</button>
-                <button type="button" class="btn-subtle" onclick="exportActiveThemeJson()">Exportar JSON Activo</button>
-                <button type="button" class="btn-subtle" onclick="resetToDefaultTheme()">Restablecer por defecto</button>
-                <button type="button" class="btn-primary" onclick="applyCustomJsonTheme()">Aplicar Tema JSON</button>
+                <div class="json-actions">
+                    <button type="button" class="btn-subtle" onclick="downloadThemeTemplate()">Descargar Plantilla JSON</button>
+                    <button type="button" class="btn-subtle" onclick="document.getElementById('ThemeFileInput').click()">Cargar Archivo JSON</button>
+                    <button type="button" class="btn-subtle" onclick="exportActiveThemeJson()">Exportar JSON Activo</button>
+                    <button type="button" class="btn-subtle" onclick="resetToDefaultTheme()">Restablecer por defecto</button>
+                    <button type="button" class="btn-primary" onclick="applyCustomJsonTheme()">Aplicar Tema JSON</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN 2: NOTIFICACIONES -->
+    <div id="TabNotifications" class="settings-tab-content" style="display: none;">
+        <div class="settings-section">
+            <h2 class="settings-title">Preferencia de Notificaciones</h2>
+            <p class="settings-desc">Configura las alertas flotantes y sonidos del sistema al compartir o recibir archivos.</p>
+
+            <div class="setting-row-card">
+                <div class="setting-info">
+                    <span class="setting-name">Notificaciones Flotantes (Toasts)</span>
+                    <span class="setting-help">Muestra tarjetas de confirmación en la esquina de la pantalla al copiar enlaces o subir archivos.</span>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="ToggleNotifications" checked onchange="saveSystemSettings()" />
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-row-card">
+                <div class="setting-info">
+                    <span class="setting-name">Efectos Sonoros</span>
+                    <span class="setting-help">Reproduce un tono sutil cuando se completa una transferencia.</span>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="ToggleNotificationSound" checked onchange="saveSystemSettings()" />
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN 3: SEGUNDO PLANO Y SISTEMA -->
+    <div id="TabBackground" class="settings-tab-content" style="display: none;">
+        <div class="settings-section">
+            <h2 class="settings-title">Comportamiento al Cerrar la Ventana</h2>
+            <p class="settings-desc">Controla si NetDrop debe continuar funcionando en segundo plano cuando cierres la ventana de la aplicación.</p>
+
+            <div class="setting-row-card warning-accent">
+                <div class="setting-info">
+                    <span class="setting-name">Ejecutar en segundo plano al cerrar la ventana</span>
+                    <span class="setting-help">
+                        <strong>Desactivado por defecto (Recomendado):</strong> Al cerrar la ventana, la aplicación y el servidor se cerrarán por completo.<br>
+                        <strong>Activado:</strong> Al cerrar la ventana, la aplicación continuará activa en segundo plano en tu red local.
+                    </span>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="ToggleBackgroundMode" onchange="saveSystemSettings()" />
+                    <span class="toggle-slider"></span>
+                </label>
             </div>
         </div>
     </div>
@@ -56,6 +128,16 @@
 
 <script>
     let defaultThemes = [];
+
+    function switchSettingsTab(tabKey, btn) {
+        document.querySelectorAll('.settings-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.settings-tab-content').forEach(c => c.style.display = 'none');
+
+        btn.classList.add('active');
+        if (tabKey === 'themes') document.getElementById('TabThemes').style.display = 'block';
+        if (tabKey === 'notifications') document.getElementById('TabNotifications').style.display = 'block';
+        if (tabKey === 'background') document.getElementById('TabBackground').style.display = 'block';
+    }
 
     async function loadThemes() {
         try {
@@ -70,9 +152,7 @@
     async function getActiveThemeData() {
         try {
             const data = localStorage.getItem('netdrop_active_theme_data');
-            if (data) {
-                return JSON.parse(data);
-            }
+            if (data) return JSON.parse(data);
         } catch (e) {}
 
         try {
@@ -212,7 +292,52 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', loadThemes);
+    /* Guardar y Cargar Ajustes del Sistema (Segundo Plano / Notificaciones) */
+    async function loadSystemSettings() {
+        try {
+            const res = await fetch('/api/app-settings');
+            if (res.ok) {
+                const data = await res.json();
+                if (data.ok && data.settings) {
+                    document.getElementById('ToggleBackgroundMode').checked = !!data.settings.background_mode;
+                    document.getElementById('ToggleNotifications').checked = data.settings.notifications_enabled !== false;
+                    document.getElementById('ToggleNotificationSound').checked = data.settings.notification_sound !== false;
+                }
+            }
+        } catch (e) {}
+    }
+
+    async function saveSystemSettings() {
+        const bgMode = document.getElementById('ToggleBackgroundMode').checked;
+        const notifs = document.getElementById('ToggleNotifications').checked;
+        const sound = document.getElementById('ToggleNotificationSound').checked;
+
+        try {
+            const res = await fetch('/api/app-settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    background_mode: bgMode,
+                    notifications_enabled: notifs,
+                    notification_sound: sound
+                })
+            });
+
+            if (res.ok) {
+                const msg = bgMode 
+                    ? '✓ Modo segundo plano activado al cerrar' 
+                    : '✓ Al cerrar la ventana se cerrará todo el programa por completo';
+                showToast(msg);
+            }
+        } catch (e) {
+            showToast('Error al guardar ajustes');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadThemes();
+        loadSystemSettings();
+    });
 </script>
 
 {% endblock %}

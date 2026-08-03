@@ -1,6 +1,6 @@
-# NetDrop v2.0.0 - Rediseño Editorial, Temas JSON & Sincronización en Tiempo Real
+# NetDrop v2.1.0 - Rediseño Editorial, Temas JSON & Sincronización en Tiempo Real
 
-¡Nos alegra presentar **NetDrop v2.0.0**! Esta versión incluye una reconstrucción estética completa, un motor de temas en tiempo real basado en JSON, sincronización instantánea entre dispositivos y optimizaciones masivas de memoria.
+¡Nos alegra presentar **NetDrop v2.1.0**! Esta versión incluye una reconstrucción estética completa, un motor de temas en tiempo real basado en JSON, sincronización instantánea entre dispositivos y optimizaciones masivas de memoria.
 
 ---
 
@@ -11,7 +11,7 @@
 - **Persistencia en disco:** Guardado permanente en `.active_theme.json` compatible con la app de escritorio y navegadores móviles.
 
 ### ⚡ 2. Sincronización en Tiempo Real entre Dispositivos (Live Sync)
-- **Sondeo inteligente cada 2 segundos:** Cualquier archivo subido desde una computadora o teléfono aparece de inmediato en todos los demás dispositivos conectados sin necesidad de recargar la página.
+- **Sondeo inteligente cada 2 segundos:** Cualquier archivo subido desde una computadora o teléfono aparece de inmediato en todos los demás dispositivos conectados sin necesidad de recargar la página manualmente.
 
 ### 🖼️ 3. Vista Previa Instantánea de Archivos (Live Preview)
 - **Lightbox integrado:** Visualización en vivo para imágenes (`JPG`, `PNG`, `GIF`, `WEBP`, `SVG`), videos (`MP4`, `WEBM`, `MOV`), audio (`MP3`, `WAV`, `FLAC`) y código/texto (`PY`, `JS`, `HTML`, `CSS`, `JSON`, `MD`).
@@ -28,6 +28,5 @@
 ---
 
 ### 🛠️ Archivos de Instalación y Ejecutables Incluidos:
-- `NetDrop-Linux-x64`: Ejecutable binario nativo independiente para Linux (64-bit).
-- `netdrop-installer.deb`: Paquete de instalación para Debian, Ubuntu, Linux Mint y derivados.
 - `NetDrop-Windows-x64.zip`: Paquete con lanzador de 1-clic (`iniciar_netdrop.bat`) e instalador de dependencias automático para Windows.
+- `NetDrop-Linux-x64.zip`: Paquete con lanzador de escritorio PySide6 y servidor Flask para Linux.

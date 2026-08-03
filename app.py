@@ -88,6 +88,40 @@ def sync_status():
     })
 
 THEME_FILE_PATH = os.path.join(Files_Carpet, ".active_theme.json")
+SETTINGS_FILE_PATH = os.path.join(Files_Carpet, ".app_settings.json")
+
+def get_app_settings():
+    if os.path.exists(SETTINGS_FILE_PATH):
+        try:
+            with open(SETTINGS_FILE_PATH, 'r', encoding='utf-8') as f:
+                import json
+                return json.load(f)
+        except Exception:
+            pass
+    return {
+        "background_mode": False,
+        "notifications_enabled": True,
+        "notification_sound": True
+    }
+
+def save_app_settings(settings_data):
+    try:
+        with open(SETTINGS_FILE_PATH, 'w', encoding='utf-8') as f:
+            import json
+            json.dump(settings_data, f, ensure_ascii=False, indent=2)
+        return True
+    except Exception:
+        return False
+
+@app.route('/api/app-settings', methods=['GET', 'POST'])
+def api_app_settings():
+    if request.method == 'POST':
+        data = request.get_json(force=True) or {}
+        current = get_app_settings()
+        current.update(data)
+        save_app_settings(current)
+        return jsonify({"ok": True, "settings": current})
+    return jsonify({"ok": True, "settings": get_app_settings()})
 
 @app.route('/api/theme', methods=['GET', 'POST'])
 def api_theme():
@@ -265,7 +299,7 @@ def arrancar_webview():
     """Función para correr la interfaz ligera nativa en el hilo principal."""
     time.sleep(0.8) 
     proto = 'https' if es_https() else 'http'
-    webview.create_window(
+    window = webview.create_window(
         title='NetDrop Desktop', 
         url=f'{proto}://127.0.0.1:5000',
         width=850,
@@ -273,6 +307,16 @@ def arrancar_webview():
         min_size=(850, 650),
         resizable=True
     )
+
+    def on_window_closed():
+        settings = get_app_settings()
+        if not settings.get("background_mode", False):
+            print("🛑 Modo segundo plano desactivado. Cerrando NetDrop por completo.")
+            os._exit(0)
+        else:
+            print("🌙 Modo segundo plano activado. Servidor NetDrop continúa activo.")
+
+    window.events.closed += on_window_closed
     webview.start()
 
 if __name__ == '__main__':
