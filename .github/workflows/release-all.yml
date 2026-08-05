@@ -39,13 +39,17 @@ jobs:
 
       - name: Prepare & Build .deb Installer Package
         run: |
+          rm -rf netdrop-installer/usr/share/netdrop
           mkdir -p netdrop-installer/usr/bin
           mkdir -p netdrop-installer/usr/share/netdrop
           cp -r dist/netdrop_app/* netdrop-installer/usr/share/netdrop/
           echo '#!/bin/bash' > netdrop-installer/usr/bin/netdrop
           echo '/usr/share/netdrop/NetDrop-Linux-x64 "$@"' >> netdrop-installer/usr/bin/netdrop
-          chmod +x netdrop-installer/usr/bin/netdrop
-          dpkg-deb --build netdrop-installer dist/netdrop-installer.deb
+          chmod 755 netdrop-installer/usr/bin/netdrop
+          chmod 755 netdrop-installer/DEBIAN
+          chmod 644 netdrop-installer/DEBIAN/control
+          chmod -R 755 netdrop-installer/usr/share/netdrop
+          dpkg-deb --root-owner-group --build netdrop-installer dist/netdrop-installer.deb
 
       - name: Upload Linux Artifacts
         uses: actions/upload-artifact@v4
@@ -107,7 +111,7 @@ jobs:
     name: Publish Unified GitHub Release (Linux + Windows)
     needs: [build-linux, build-windows]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    if: (startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch') && success()
 
     steps:
       - name: Checkout repository
