@@ -41,3 +41,14 @@ Qr/
 build_exe.py
 NetDrop_Installer.nsi
 File/
+build/
+dist/
+*.deb
+netdrop-installer/
+distribucion/*.deb
+
+build/
+dist/
+*.deb
+netdrop-installer/
+*.zip

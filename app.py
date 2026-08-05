@@ -27,6 +27,16 @@ app = Flask(__name__, template_folder=templates_dir(), static_folder=static_dir(
 app.config['SECRET_KEY'] = secrets.token_hex(32)
 app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_SIZE
 app.config['MAX_FORM_MEMORY_SIZE'] = 10 * 1024 * 1024  # 10MB máx en RAM por petición
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000  # Caché de 1 año para archivos estáticos
+
+@app.after_request
+def add_cache_headers(response):
+    """Cabeceras de caché HTTP para acelerar la carga en navegadores y WebView nativo."""
+    if request.path.startswith('/static/'):
+        response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+    elif request.path.startswith('/api/'):
+        response.headers['Cache-Control'] = 'no-cache, must-revalidate'
+    return response
 
 # Carpeta de destino persistente para archivos subidos.
 Files_Carpet, _ = ensure_runtime_dirs()
@@ -291,13 +301,13 @@ def ejecutar_servidor():
     cert, key = cert_paths()
     if os.path.exists(cert) and os.path.exists(key):
         print("🔒 Servidor seguro HTTPS activado con certificados SSL")
-        app.run(debug=True, host="0.0.0.0", port=5000, ssl_context=(cert, key), use_reloader=False)
+        app.run(debug=False, host="0.0.0.0", port=5000, ssl_context=(cert, key), use_reloader=False)
     else:
-        app.run(debug=True, host="0.0.0.0", port=5000, use_reloader=False)
+        app.run(debug=False, host="0.0.0.0", port=5000, use_reloader=False)
 
 def arrancar_webview():
     """Función para correr la interfaz ligera nativa en el hilo principal."""
-    time.sleep(0.8) 
+    time.sleep(0.15) 
     proto = 'https' if es_https() else 'http'
     window = webview.create_window(
         title='NetDrop Desktop', 
