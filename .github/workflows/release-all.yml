@@ -1,0 +1,139 @@
+name: Build Cross-Platform Releases (Linux & Windows)
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-linux:
+    name: Build Linux Packages (.deb & .zip)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller pywebview
+
+      - name: Build Linux Distribution with PyInstaller
+        run: |
+          pyinstaller --clean distribucion/NetDrop-Linux-x64.spec
+
+      - name: Create Linux .zip Package
+        run: |
+          cd dist && zip -r NetDrop-Linux-x64.zip netdrop_app/
+
+      - name: Prepare & Build .deb Installer Package
+        run: |
+          mkdir -p netdrop-installer/usr/bin
+          mkdir -p netdrop-installer/usr/share/netdrop
+          cp -r dist/netdrop_app/* netdrop-installer/usr/share/netdrop/
+          cat << 'EOF' > netdrop-installer/usr/bin/netdrop
+#!/bin/bash
+/usr/share/netdrop/NetDrop-Linux-x64 "$@"
+EOF
+          chmod +x netdrop-installer/usr/bin/netdrop
+          dpkg-deb --build netdrop-installer dist/netdrop-installer.deb
+
+      - name: Upload Linux Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-artifacts
+          path: |
+            dist/NetDrop-Linux-x64.zip
+            dist/netdrop-installer.deb
+
+  build-windows:
+    name: Build Windows Packages (.exe & .zip)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller pywebview
+
+      - name: Build Standalone Portable Exe (OneFile)
+        run: |
+          pyinstaller --clean distribucion/NetDrop-Windows-OneFile.spec
+
+      - name: Build Directory Distribution for Setup (Folder)
+        run: |
+          pyinstaller --clean distribucion/NetDrop-Windows-Folder.spec
+
+      - name: Create Inno Setup Installer
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" distribucion/NetDrop-Setup.iss
+
+      - name: Create Zip Package
+        shell: powershell
+        run: |
+          Compress-Archive -Path dist/NetDrop-Windows/* -DestinationPath dist/NetDrop-Windows-x64.zip -Force
+
+      - name: Upload Windows Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-artifacts
+          path: |
+            dist/NetDrop-Windows-Portable.exe
+            dist/NetDrop-Setup-v2.1.0.exe
+            dist/NetDrop-Windows-x64.zip
+
+  publish-release:
+    name: Publish Unified GitHub Release (Linux + Windows)
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Linux Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-artifacts
+          path: release-assets/
+
+      - name: Download Windows Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-artifacts
+          path: release-assets/
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: NetDrop Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: release-assets/*
+          body_path: RELEASE_NOTES.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
