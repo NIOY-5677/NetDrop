@@ -42,10 +42,8 @@ jobs:
           mkdir -p netdrop-installer/usr/bin
           mkdir -p netdrop-installer/usr/share/netdrop
           cp -r dist/netdrop_app/* netdrop-installer/usr/share/netdrop/
-          cat << 'EOF' > netdrop-installer/usr/bin/netdrop
-#!/bin/bash
-/usr/share/netdrop/NetDrop-Linux-x64 "$@"
-EOF
+          echo '#!/bin/bash' > netdrop-installer/usr/bin/netdrop
+          echo '/usr/share/netdrop/NetDrop-Linux-x64 "$@"' >> netdrop-installer/usr/bin/netdrop
           chmod +x netdrop-installer/usr/bin/netdrop
           dpkg-deb --build netdrop-installer dist/netdrop-installer.deb
 
