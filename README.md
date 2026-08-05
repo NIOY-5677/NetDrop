@@ -25,6 +25,14 @@ Con NetDrop puedes:
 pip install -r requirements.txt
 ```
 
+## 📦 Descarga para Windows (Ejecutable e Instalador de 1 Clic)
+
+Puedes descargar la versión compilada para Windows directamente desde [GitHub Releases](https://github.com/NioyDev/NetDrop/releases):
+
+- 💻 **`NetDrop-Setup-v2.1.0.exe`**: Instalador clásico para Windows (crea acceso directo en Escritorio y Menú Inicio).
+- ⚡ **`NetDrop-Windows-Portable.exe`**: Ejecutable portable de 1 solo clic (sin necesidad de instalación ni Python).
+- 📦 **`NetDrop-Windows-x64.zip`**: Archivo comprimido con la distribución ejecutable.
+
 ## Ejecutar desde el codigo fuente
 
 En Windows:

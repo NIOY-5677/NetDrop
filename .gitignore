@@ -12,9 +12,12 @@ venv/
 pip-log.txt
 pip-delete-this-directory.txt
 
-# Archivos de configuración de IDEs
+# Archivos de configuración de IDEs y AI Agents
 .vscode/
 .idea/
+.claude/
+.gemini/
+.agents/
 *.swp
 *.swo
 
@@ -27,28 +30,16 @@ pip-delete-this-directory.txt
 .DS_Store
 Thumbs.db
 
-# Archivos de dependencias
-poetry.lock
-Pipfile.lock
-
 # Configuración de Docker y despliegue
 *.dockerfile
 *.envrc
 .env
 
-.gitignore
 Qr/
-build_exe.py
-NetDrop_Installer.nsi
 File/
 build/
 dist/
 *.deb
 netdrop-installer/
 distribucion/*.deb
-
-build/
-dist/
-*.deb
-netdrop-installer/
 *.zip
