@@ -42,7 +42,17 @@ jobs:
           mkdir -p build_deb/DEBIAN
           mkdir -p build_deb/usr/bin
           mkdir -p build_deb/usr/share/netdrop
-          cp netdrop-installer/DEBIAN/control build_deb/DEBIAN/
+          if [ -f netdrop-installer/DEBIAN/control ]; then
+            cp netdrop-installer/DEBIAN/control build_deb/DEBIAN/
+          else
+            echo "Package: netdrop" > build_deb/DEBIAN/control
+            echo "Version: 2.1.2" >> build_deb/DEBIAN/control
+            echo "Section: utils" >> build_deb/DEBIAN/control
+            echo "Priority: optional" >> build_deb/DEBIAN/control
+            echo "Architecture: amd64" >> build_deb/DEBIAN/control
+            echo "Maintainer: Nexthezia Studios" >> build_deb/DEBIAN/control
+            echo "Description: Transferencia de archivos ultraligera en red local." >> build_deb/DEBIAN/control
+          fi
           cp -r dist/netdrop_app/* build_deb/usr/share/netdrop/
           echo '#!/bin/bash' > build_deb/usr/bin/netdrop
           echo '/usr/share/netdrop/NetDrop-Linux-x64 "$@"' >> build_deb/usr/bin/netdrop

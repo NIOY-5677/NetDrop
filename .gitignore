@@ -40,6 +40,6 @@ File/
 build/
 dist/
 *.deb
-netdrop-installer/
+!netdrop-installer/DEBIAN/control
 distribucion/*.deb
 *.zip

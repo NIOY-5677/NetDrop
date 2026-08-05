@@ -1,0 +1,7 @@
+Package: netdrop
+Version: 2.1.1
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: Nexthezia Studios
+Description: Transferencia de archivos ultraligera en red local.
