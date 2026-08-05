@@ -39,17 +39,18 @@ jobs:
 
       - name: Prepare & Build .deb Installer Package
         run: |
-          rm -rf netdrop-installer/usr/share/netdrop
-          mkdir -p netdrop-installer/usr/bin
-          mkdir -p netdrop-installer/usr/share/netdrop
-          cp -r dist/netdrop_app/* netdrop-installer/usr/share/netdrop/
-          echo '#!/bin/bash' > netdrop-installer/usr/bin/netdrop
-          echo '/usr/share/netdrop/NetDrop-Linux-x64 "$@"' >> netdrop-installer/usr/bin/netdrop
-          chmod 755 netdrop-installer/usr/bin/netdrop
-          chmod 755 netdrop-installer/DEBIAN
-          chmod 644 netdrop-installer/DEBIAN/control
-          chmod -R 755 netdrop-installer/usr/share/netdrop
-          dpkg-deb --root-owner-group --build netdrop-installer dist/netdrop-installer.deb
+          mkdir -p build_deb/DEBIAN
+          mkdir -p build_deb/usr/bin
+          mkdir -p build_deb/usr/share/netdrop
+          cp netdrop-installer/DEBIAN/control build_deb/DEBIAN/
+          cp -r dist/netdrop_app/* build_deb/usr/share/netdrop/
+          echo '#!/bin/bash' > build_deb/usr/bin/netdrop
+          echo '/usr/share/netdrop/NetDrop-Linux-x64 "$@"' >> build_deb/usr/bin/netdrop
+          chmod 755 build_deb/usr/bin/netdrop
+          chmod 755 build_deb/DEBIAN
+          chmod 644 build_deb/DEBIAN/control
+          chmod -R 755 build_deb/usr/share/netdrop
+          dpkg-deb --root-owner-group --build build_deb dist/netdrop-installer.deb
 
       - name: Upload Linux Artifacts
         uses: actions/upload-artifact@v4
