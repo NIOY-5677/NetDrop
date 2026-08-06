@@ -20,8 +20,11 @@ from Funciones.abrirNavegador import abrir_navegador
 from Funciones.close import esta_cerrado
 
 
-#Lanzador
-from Lanzador.main import Iniciador
+# Lanzador opcional
+try:
+    from Lanzador.main import Iniciador
+except Exception:
+    Iniciador = None
 
 app = Flask(__name__, template_folder=templates_dir(), static_folder=static_dir())
 app.config['SECRET_KEY'] = secrets.token_hex(32)

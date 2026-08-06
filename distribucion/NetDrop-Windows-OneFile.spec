@@ -20,7 +20,17 @@ a = Analysis(
         'qrcode',
         'PIL',
         'engineio.async_drivers.threading',
-        'jinja2'
+        'jinja2',
+        'Lanzador',
+        'Lanzador.main',
+        'Funciones',
+        'Funciones.ip',
+        'Funciones.abrirNavegador',
+        'Funciones.close',
+        'Funciones.paths',
+        'Funciones.configuracion',
+        'Funciones.Qr_Generator',
+        'Funciones.Show_File'
     ],
     hookspath=[],
     hooksconfig={},

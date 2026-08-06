@@ -1,8 +1,12 @@
 import sys
 import os
-from PySide6.QtWidgets import QApplication, QPushButton, QVBoxLayout, QWidget
-from PySide6.QtGui import QIcon  # Necesario para el icono
 from Funciones.abrirNavegador import abrir_navegador
+
+try:
+    from PySide6.QtWidgets import QApplication, QPushButton, QVBoxLayout, QWidget
+    from PySide6.QtGui import QIcon  # Necesario para el icono
+except ImportError:
+    QApplication = QPushButton = QVBoxLayout = QWidget = QIcon = None
 
 class MiApp(QWidget):
     def __init__(self):
@@ -50,6 +54,11 @@ class MiApp(QWidget):
             print(f"⚠️ Alerta: No se encontró {ruta_qss}")
 
 def Iniciador():
+    if QApplication is None:
+        print("⚠️ PySide6 no está instalado. Usando navegador/webview predeterminado.")
+        abrir_navegador()
+        return
+
     app = QApplication(sys.argv)
     app.setApplicationName("NetDrop Desktop")
     
